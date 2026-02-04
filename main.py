@@ -6,410 +6,470 @@ import random
 import time
 import json
 import math
-import os  # Added to read environment variables
-from typing import Optional, List, Dict
+import os
+from typing import Optional, List, Dict, Any
 
 # ==============================================================================
-# ⚙️ CONFIGURATION & CONSTANTS
+# ⚙️ CONFIGURATION & ASSETS
 # ==============================================================================
 
-# ⚠️ GET TOKEN FROM ENVIRONMENT VARIABLE
 TOKEN = os.getenv("DISCORD_TOKEN")
-
 if not TOKEN:
-    raise ValueError("No DISCORD_TOKEN found in environment variables!")
+    print("⚠️ WARNING: DISCORD_TOKEN not found.")
 
-# 🎨 Theme Colors
-C_GOLD = 0xFFD700
-C_RED = 0xDC143C
-C_BLUE = 0x1E90FF
-C_GREEN = 0x32CD32
-C_PURPLE = 0x9400D3
-C_DARK = 0x2F3136
-
-# ==============================================================================
-# 📜 DATA REPOSITORY (Classes, Skills, Items)
-# ==============================================================================
-
-CLASSES = {
-    "Kshatriya": {
-        "desc": "Warrior. High HP/ATK. Master of weapons.",
-        "stats": {"hp": 150, "mp": 30, "atk": 12, "def": 5, "spd": 2},
-        "skills": ["Heavy Strike", "Shield Bash", "Rage"]
-    },
-    "Brahmin": {
-        "desc": "Sage. High MP/Magic. Master of Astras.",
-        "stats": {"hp": 80, "mp": 100, "atk": 5, "def": 2, "spd": 4},
-        "skills": ["Agni Blast", "Vayu Cutter", "Soma Heal"]
-    },
-    "Vanara": {
-        "desc": "Trickster. High Crit/Speed. Master of agility.",
-        "stats": {"hp": 100, "mp": 50, "atk": 10, "def": 3, "spd": 8},
-        "skills": ["Twin Strike", "Ambush", "Dodge"]
-    }
+COLORS = {
+    "GOLD": 0xFFD700, "CRIMSON": 0xDC143C, "CYAN": 0x00FFFF, "PURPLE": 0x9400D3,
+    "GREEN": 0x32CD32, "ORANGE": 0xFF8C00, "SAFFRON": 0xFF9933, "VOID": 0x2C2F33,
+    "CHAKRA": 0xFF1493, "DANGER": 0xFF0000
 }
 
-SKILLS = {
-    # Kshatriya
-    "Heavy Strike": {"cost": 10, "type": "dmg", "val": 1.5, "desc": "Deals 150% DMG."},
-    "Shield Bash": {"cost": 15, "type": "stun", "val": 0, "desc": "Stuns enemy for 1 turn."},
-    "Rage": {"cost": 20, "type": "buff_atk", "val": 2.0, "desc": "Double ATK for next turn."},
-    
-    # Brahmin
-    "Agni Blast": {"cost": 25, "type": "dmg_magic", "val": 2.5, "desc": "Blast of holy fire (250% Magic DMG)."},
-    "Vayu Cutter": {"cost": 15, "type": "dmg_magic", "val": 1.2, "desc": "Wind blade. Ignores Defense."},
-    "Soma Heal": {"cost": 30, "type": "heal", "val": 50, "desc": "Heals 50% Max HP."},
-    
-    # Vanara
-    "Twin Strike": {"cost": 15, "type": "multi", "val": 2, "desc": "Hit twice (80% DMG each)."},
-    "Ambush": {"cost": 20, "type": "crit", "val": 100, "desc": "Next hit is guaranteed Crit."},
-    "Dodge": {"cost": 10, "type": "buff_spd", "val": 999, "desc": "Evade next attack."},
-}
-
-MOBS = {
-    "Varanasi": [
-        {"n": "Street Thug", "hp": 50, "atk": 8, "xp": 15, "g": 10},
-        {"n": "Rabid Dog", "hp": 40, "atk": 12, "xp": 12, "g": 5},
-    ],
-    "Dandaka Forest": [
-        {"n": "Rakshasa Scout", "hp": 150, "atk": 25, "xp": 50, "g": 30},
-        {"n": "Giant Python", "hp": 200, "atk": 20, "xp": 60, "g": 40},
-    ],
-    "Lanka": [
-        {"n": "Asura General", "hp": 500, "atk": 60, "xp": 200, "g": 150},
-        {"n": "Dark Sorcerer", "hp": 350, "atk": 80, "xp": 250, "g": 120},
-    ]
-}
-
-# Renamed from PETS to RELICS for cultural respect
-RELICS = {
-    "Vajra Pendant": {"stat": "atk", "val": 5, "desc": "+5 ATK (Strength)"},
-    "Wind Anklet": {"stat": "spd", "val": 5, "desc": "+5 SPD (Agility)"},
-    "Rudraksha Bead": {"stat": "hp", "val": 50, "desc": "+50 HP (Vitality)"}
+ICONS = {
+    "hp": "❤️", "gold": "🪙", "xp": "✨", "karma": "🌟", "vidya": "📜",
+    "atk": "⚔️", "def": "🛡️", "meditate": "🧘", "travel": "🌏",
+    "shop": "🏪", "profile": "👤", "battle": "👹", "menu": "🏠"
 }
 
 # ==============================================================================
-# 🗄️ DATABASE
+# 📜 GAME DATA
+# ==============================================================================
+
+HINDU_FACTS = [
+    "The Rigveda (c. 1500 BCE) mentions the 'Sapta Sindhu' (Seven Rivers) of Punjab.",
+    "Sushruta described rhinoplasty (plastic surgery) in 600 BCE.",
+    "Kanada (c. 600 BCE) proposed the atomic theory (Vaisheshika) centuries before Dalton.",
+    "The concept of 'Maya' (Illusion) is central to Advaita Vedanta philosophy.",
+    "The number system we use today (1-9 and 0) originated in India."
+]
+
+CHAKRAS = {
+    "Muladhara":   {"name": "Root", "cost": 500, "vidya": 2, "effect": "+50 Max HP", "stat": "hp", "val": 50, "color": "🔴"},
+    "Swadhisthana":{"name": "Sacral", "cost": 1000, "vidya": 5, "effect": "+10% Gold", "stat": "gold_mult", "val": 0.1, "color": "🟠"},
+    "Manipura":    {"name": "Solar", "cost": 2500, "vidya": 10, "effect": "+20 Atk", "stat": "atk", "val": 20, "color": "🟡"},
+    "Anahata":     {"name": "Heart", "cost": 5000, "vidya": 20, "effect": "HP Regen", "stat": "regen", "val": 10, "color": "🟢"},
+    "Vishuddha":   {"name": "Throat", "cost": 10000, "vidya": 35, "effect": "+20% XP", "stat": "xp_mult", "val": 0.2, "color": "🔵"},
+    "Ajna":        {"name": "3rd Eye", "cost": 25000, "vidya": 50, "effect": "+15% Crit", "stat": "crit", "val": 0.15, "color": "🟣"},
+    "Sahasrara":   {"name": "Crown", "cost": 50000, "vidya": 100, "effect": "Moksha Boost", "stat": "moksha", "val": 1, "color": "⚪"}
+}
+
+LOCATIONS = {
+    "Varanasi": {"level": 1, "desc": "City of Lights", "img": "https://i.imgur.com/8Q5Q5Q5.png"}, # Placeholder logic
+    "Dandaka Forest": {"level": 10, "desc": "Exile Grounds"},
+    "Kishkindha": {"level": 25, "desc": "Vanara Kingdom"},
+    "Lanka": {"level": 50, "desc": "Golden Fortress"},
+    "Kailash": {"level": 80, "desc": "Holy Peak"}
+}
+
+ITEMS = {
+    "Soma": {"type": "heal", "val": 100, "price": 100, "karma": 0, "desc": "Heals 100 HP"},
+    "Amrit": {"type": "heal", "val": 9999, "price": 1000, "karma": 20, "desc": "Full Heal"},
+    "Agneyastra": {"type": "dmg", "val": 500, "price": 3000, "karma": 0, "desc": "500 DMG"},
+    "Brahmastra": {"type": "dmg", "val": 2000, "price": 10000, "karma": 50, "desc": "2000 DMG"},
+}
+
+# ==============================================================================
+# 🗄️ DATABASE SYSTEM
 # ==============================================================================
 
 class Database:
-    def __init__(self):
-        self.conn = sqlite3.connect("agni_v4.db", check_same_thread=False)
+    def __init__(self, db_name="dharma_v7.db"):
+        self.conn = sqlite3.connect(db_name, check_same_thread=False)
         self.cursor = self.conn.cursor()
-        self.init_db()
+        self.create_tables()
 
-    def init_db(self):
+    def create_tables(self):
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS players (
-                uid INTEGER PRIMARY KEY,
-                name TEXT,
-                p_class TEXT DEFAULT 'Kshatriya',
-                lvl INTEGER DEFAULT 1,
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY,
+                level INTEGER DEFAULT 1,
                 xp INTEGER DEFAULT 0,
                 hp INTEGER DEFAULT 100,
-                mp INTEGER DEFAULT 50,
                 max_hp INTEGER DEFAULT 100,
-                max_mp INTEGER DEFAULT 50,
-                stats TEXT DEFAULT '{"atk": 10, "def": 5, "spd": 5}',
-                gold INTEGER DEFAULT 100,
-                loc TEXT DEFAULT 'Varanasi',
-                relic TEXT DEFAULT 'None',
-                inventory TEXT DEFAULT '{}'
+                gold INTEGER DEFAULT 0,
+                vidya INTEGER DEFAULT 0,
+                karma INTEGER DEFAULT 0,
+                location TEXT DEFAULT 'Varanasi',
+                meditate_start TEXT DEFAULT '0',
+                chakras_unlocked TEXT DEFAULT '[]',
+                inventory TEXT DEFAULT '{}',
+                ashram TEXT DEFAULT 'None'
+            )
+        """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS ashrams (
+                name TEXT PRIMARY KEY,
+                leader_id INTEGER,
+                members TEXT
             )
         """)
         self.conn.commit()
 
-    def get_player(self, uid):
-        self.cursor.execute("SELECT * FROM players WHERE uid=?", (uid,))
-        row = self.cursor.fetchone()
-        if not row: return None
-        cols = ["uid", "name", "p_class", "lvl", "xp", "hp", "mp", "max_hp", "max_mp", "stats", "gold", "loc", "relic", "inv"]
-        d = dict(zip(cols, row))
-        d["stats"] = json.loads(d["stats"])
-        d["inv"] = json.loads(d["inv"])
-        return d
+    def get_user(self, uid):
+        self.cursor.execute("SELECT * FROM users WHERE user_id = ?", (uid,))
+        res = self.cursor.fetchone()
+        if res:
+            cols = ["user_id", "level", "xp", "hp", "max_hp", "gold", "vidya", "karma", "location", "meditate_start", "chakras", "inventory", "ashram"]
+            d = dict(zip(cols, res))
+            d["chakras"] = json.loads(d["chakras"])
+            d["inventory"] = json.loads(d["inventory"])
+            return d
+        return None
 
-    def update_player(self, uid, data):
+    def create_user(self, uid):
+        if not self.get_user(uid):
+            self.cursor.execute("INSERT INTO users (user_id) VALUES (?)", (uid,))
+            self.conn.commit()
+            return True
+        return False
+
+    def update_user(self, uid, data):
         clauses = []
         vals = []
         for k, v in data.items():
-            if k == "uid": continue
+            if k == "user_id": continue
             clauses.append(f"{k}=?")
-            vals.append(json.dumps(v) if isinstance(v, (dict, list)) else v)
+            vals.append(json.dumps(v) if isinstance(v, (list, dict)) else v)
         vals.append(uid)
-        self.cursor.execute(f"UPDATE players SET {', '.join(clauses)} WHERE uid=?", vals)
-        self.conn.commit()
-
-    def create_player(self, uid, name, p_class):
-        base = CLASSES[p_class]["stats"]
-        stats = {"atk": base["atk"], "def": base["def"], "spd": base["spd"]}
-        self.cursor.execute("""
-            INSERT INTO players (uid, name, p_class, hp, max_hp, mp, max_mp, stats)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (uid, name, p_class, base["hp"], base["hp"], base["mp"], base["mp"], json.dumps(stats)))
+        self.cursor.execute(f"UPDATE users SET {', '.join(clauses)} WHERE user_id=?", vals)
         self.conn.commit()
 
 db = Database()
 
 # ==============================================================================
-# 🛠️ UTILS
+# 🎨 UI COMPONENTS (The "1000x Better" Part)
 # ==============================================================================
 
-def bar(curr, max_val, color="🟩", length=10):
-    pct = max(0, min(1, curr / max(1, max_val)))
+class DharmaEmbed(discord.Embed):
+    def __init__(self, title, description=None, color=COLORS["SAFFRON"], user_data=None, user_obj=None):
+        super().__init__(title=f"🕉️ {title}", description=description, color=color)
+        if user_data and user_obj:
+            txt = f"Lvl {user_data['level']} • {ICONS['gold']} {user_data['gold']} • {ICONS['karma']} {user_data['karma']}"
+            self.set_author(name=user_obj.display_name, icon_url=user_obj.display_avatar.url)
+            self.set_footer(text=txt)
+        else:
+            self.set_footer(text=f"📜 {random.choice(HINDU_FACTS)}")
+
+def render_health_bar(current, max_val, length=10):
+    pct = max(0, min(1, current / max(1, max_val)))
     filled = int(length * pct)
-    return f"{color * filled}{'⬛' * (length - filled)}"
+    
+    # Dynamic Color Logic
+    if pct > 0.6: char = "🟩"
+    elif pct > 0.3: char = "🟨"
+    else: char = "🟥"
+    
+    bar = char * filled + "⬛" * (length - filled)
+    return f"{bar} `{current}/{max_val}`"
 
-def calc_stats(p):
-    s = p['stats'].copy()
-    # Add Relic Bonus
-    if p['relic'] in RELICS:
-        bonus = RELICS[p['relic']]
-        if bonus['stat'] in s:
-            s[bonus['stat']] += bonus['val']
-        elif bonus['stat'] == 'hp':
-             # HP handled separately usually, but for max stats:
-             pass 
-    return s
+def render_chakra_tree(unlocked_list):
+    # Creates a visual tree: 🔴─🟠─🟡...
+    tree = []
+    for key, data in CHAKRAS.items():
+        if key in unlocked_list:
+            tree.append(data['color'])
+        else:
+            tree.append("🔒")
+    return "─".join(tree)
 
 # ==============================================================================
-# ⚔️ TACTICAL COMBAT ENGINE
+# 🏠 DASHBOARD (MAIN MENU)
+# ==============================================================================
+
+class DashboardView(ui.View):
+    def __init__(self, user):
+        super().__init__(timeout=None)
+        self.user = user
+
+    async def refresh_embed(self, interaction):
+        u = db.get_user(self.user.id)
+        embed = DharmaEmbed("Sanctum Dashboard", "Navigate your spiritual journey.", user_data=u, user_obj=self.user)
+        
+        # Stats Grid
+        embed.add_field(name="Vitality", value=f"{ICONS['hp']} {u['hp']}/{u['max_hp']}\n{ICONS['xp']} {u['xp']}", inline=True)
+        embed.add_field(name="Wealth", value=f"{ICONS['gold']} {u['gold']}\n{ICONS['vidya']} {u['vidya']}", inline=True)
+        embed.add_field(name="Location", value=f"{ICONS['travel']} **{u['location']}**", inline=True)
+        
+        # Chakra Visual
+        tree = render_chakra_tree(u['chakras'])
+        embed.add_field(name="Chakras", value=f"{tree}", inline=False)
+        
+        # Quick Inventory
+        inv_preview = ", ".join([f"{k} x{v}" for k,v in u['inventory'].items()]) or "Empty"
+        embed.add_field(name="Satchel", value=inv_preview, inline=False)
+        
+        return embed
+
+    @ui.button(label="Battle", style=discord.ButtonStyle.danger, emoji=ICONS["battle"], row=0)
+    async def battle(self, interaction: discord.Interaction, button: ui.Button):
+        u = db.get_user(self.user.id)
+        if u['hp'] < 10: return await interaction.response.send_message("🩸 Too weak! Meditate or Heal.", ephemeral=True)
+        
+        lvl = u['level']
+        enemy = {"name": f"Asura Lvl {lvl}", "hp": 50+(lvl*15), "max_hp": 50+(lvl*15), "atk": 10+lvl, "xp": 20+(lvl*5), "gold": 15+lvl}
+        await interaction.response.send_message(view=CombatView(self.user, enemy), ephemeral=True)
+
+    @ui.button(label="Meditate", style=discord.ButtonStyle.success, emoji=ICONS["meditate"], row=0)
+    async def meditate(self, interaction: discord.Interaction, button: ui.Button):
+        await interaction.response.send_message(view=MeditateView(), ephemeral=True)
+
+    @ui.button(label="Shop", style=discord.ButtonStyle.primary, emoji=ICONS["shop"], row=0)
+    async def shop(self, interaction: discord.Interaction, button: ui.Button):
+        await interaction.response.send_message(view=ShopView(self.user.id), ephemeral=True)
+
+    @ui.button(label="Chakras", style=discord.ButtonStyle.secondary, emoji="🕉️", row=1)
+    async def chakras(self, interaction: discord.Interaction, button: ui.Button):
+        await interaction.response.send_message(view=ChakraView(self.user), ephemeral=True)
+
+    @ui.button(label="Travel", style=discord.ButtonStyle.secondary, emoji=ICONS["travel"], row=1)
+    async def travel(self, interaction: discord.Interaction, button: ui.Button):
+        await interaction.response.send_message(view=TravelView(self.user.id), ephemeral=True)
+    
+    @ui.button(label="Refresh", style=discord.ButtonStyle.gray, emoji="🔄", row=1)
+    async def refresh(self, interaction: discord.Interaction, button: ui.Button):
+        if interaction.user.id != self.user.id: return
+        embed = await self.refresh_embed(interaction)
+        await interaction.message.edit(embed=embed)
+        await interaction.response.defer()
+
+# ==============================================================================
+# ⚔️ COMBAT SYSTEM (Enhanced UI)
 # ==============================================================================
 
 class CombatView(ui.View):
-    def __init__(self, p, mob):
-        super().__init__(timeout=300)
-        self.p = p
-        self.mob = mob
-        self.logs = []
+    def __init__(self, user, enemy):
+        super().__init__(timeout=180)
+        self.user = user
+        self.u = db.get_user(user.id)
+        self.enemy = enemy
+        
+        # Apply Passives
+        self.atk_mult = 1.0 + (0.2 if "Manipura" in self.u['chakras'] else 0)
+        self.crit_chance = 0.05 + (0.15 if "Ajna" in self.u['chakras'] else 0)
+        self.regen = 10 if "Anahata" in self.u['chakras'] else 0
+        
+        self.logs = ["⚔️ **Encounter started!**"]
         self.turn = 1
-        
-        # Init Combat Stats
-        self.p_stats = calc_stats(p)
-        self.m_hp = mob['hp']
-        self.m_max = mob['hp']
-        
-        # Dynamic State
-        self.buffs = {} # "atk_up": 2
-        self.stunned = False
-        self.next_enemy_move = "Attack"
-        
-        self.add_log(f"⚔️ **ENCOUNTER!** {mob['n']} blocks your path!")
-        self.telegraph_enemy()
-
-    def add_log(self, text):
-        self.logs.append(text)
-        if len(self.logs) > 6: self.logs.pop(0)
-
-    def telegraph_enemy(self):
-        # Enemy "AI" - decides move for NEXT turn
-        moves = ["Attack", "Charge", "Block"]
-        self.next_enemy_move = random.choice(moves)
-        if self.next_enemy_move == "Charge":
-            self.add_log(f"⚠️ **{self.mob['n']}** is gathering energy! (Danger)")
-        elif self.next_enemy_move == "Block":
-            self.add_log(f"🛡️ **{self.mob['n']}** raises a guard.")
 
     def get_embed(self, status="FIGHT"):
-        c = C_RED if status == "FIGHT" else (C_GREEN if status == "WIN" else C_DARK)
-        desc = f"**Turn {self.turn}** | {self.p['loc']}\n\n"
+        c = COLORS["DANGER"] if status == "FIGHT" else (COLORS["GREEN"] if status == "WIN" else COLORS["VOID"])
+        e = discord.Embed(title=f"⚔️ Battle vs {self.enemy['name']}", color=c)
         
-        # Player
-        desc += f"**🛡️ {self.p['name']}** ({self.p['p_class']})\n"
-        desc += f"HP: {bar(self.p['hp'], self.p['max_hp'])} {self.p['hp']}\n"
-        desc += f"MP: {bar(self.p['mp'], self.p['max_mp'], '🟦')} {self.p['mp']}\n\n"
+        # Layout: Side by Side Fields
+        e.add_field(name=f"🛡️ {self.user.display_name}", value=render_health_bar(self.u['hp'], self.u['max_hp']), inline=True)
+        e.add_field(name=f"👹 {self.enemy['name']}", value=render_health_bar(self.enemy['hp'], self.enemy['max_hp']), inline=True)
         
-        # Enemy
-        desc += f"**👹 {self.mob['n']}**\n"
-        desc += f"HP: {bar(self.m_hp, self.m_max, '🟥')} {self.m_hp}\n"
-        desc += f"Next Move: **{self.next_enemy_move}**\n\n"
+        # Battle Log Area
+        last_log = self.logs[-1]
+        history = "\n".join(self.logs[-4:-1]) # Previous 3 logs
         
-        desc += "```diff\n" + "\n".join(self.logs) + "\n```"
-        return discord.Embed(title=f"⚔️ BATTLE: {self.mob['n']}", description=desc, color=c)
+        e.add_field(name="⚡ Latest Action", value=f"> {last_log}", inline=False)
+        if history:
+            e.add_field(name="📜 History", value=f"```diff\n{history}\n```", inline=False)
+            
+        return e
 
     async def end_turn(self, interaction):
-        if self.m_hp <= 0:
-            # Win
-            gold = self.mob['g']
-            xp = self.mob['xp']
-            self.p['gold'] += gold
-            self.p['xp'] += xp
+        # Regen
+        if self.regen > 0 and self.u['hp'] < self.u['max_hp']:
+            self.u['hp'] = min(self.u['max_hp'], self.u['hp'] + self.regen)
+
+        if self.enemy['hp'] <= 0:
+            xp = self.enemy['xp'] * (1.2 if "Vishuddha" in self.u['chakras'] else 1.0)
+            gold = self.enemy['gold']
+            
+            self.u['xp'] += int(xp)
+            self.u['gold'] += gold
+            self.u['karma'] += 1
             
             # Level Up Check
-            if self.p['xp'] >= self.p['lvl'] * 100:
-                self.p['lvl'] += 1
-                self.p['xp'] = 0
-                self.p['max_hp'] += 20
-                self.p['hp'] = self.p['max_hp']
-                self.p['stats']['atk'] += 2
-                self.add_log(f"✨ **LEVEL UP!** You are now Lvl {self.p['lvl']}!")
+            lvl_msg = ""
+            if self.u['xp'] >= self.u['level'] * 100:
+                self.u['level'] += 1
+                self.u['xp'] = 0
+                self.u['max_hp'] += 10
+                self.u['hp'] = self.u['max_hp']
+                lvl_msg = "\n✨ **LEVEL UP!**"
 
-            db.update_player(self.p['uid'], self.p)
+            db.update_user(self.user.id, self.u)
+            
             embed = self.get_embed("WIN")
-            embed.add_field(name="VICTORY", value=f"💰 +{gold} Gold\n✨ +{xp} XP")
+            embed.add_field(name="🏆 VICTORY", value=f"Gained: **{int(xp)} XP** | **{gold} Gold**{lvl_msg}", inline=False)
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
-        # Enemy Action Execution
-        if not self.stunned:
-            dmg = 0
-            msg = ""
-            
-            if self.next_enemy_move == "Attack":
-                dmg = max(1, self.mob['atk'] - self.p_stats['def'])
-                msg = f"attacks for {dmg} DMG!"
-            elif self.next_enemy_move == "Charge":
-                dmg = max(1, (self.mob['atk'] * 2.5) - self.p_stats['def'])
-                msg = f"unleashes a DEVASTATING hit for {dmg} DMG!"
-            elif self.next_enemy_move == "Block":
-                msg = "held their guard."
-            
-            if dmg > 0:
-                # Dodge check
-                if random.randint(1, 100) < (self.p_stats['spd'] * 2):
-                    self.add_log(f"💨 You DODGED the attack!")
-                else:
-                    self.p['hp'] -= int(dmg)
-                    self.add_log(f"- {self.mob['n']} {msg}")
-        else:
-            self.add_log(f"💫 {self.mob['n']} is stunned and cannot move!")
-            self.stunned = False # Reset stun
-
-        if self.p['hp'] <= 0:
-            self.p['hp'] = 10
-            db.update_player(self.p['uid'], self.p)
+        # Enemy Turn
+        dmg = random.randint(int(self.enemy['atk']*0.8), int(self.enemy['atk']*1.2))
+        self.u['hp'] -= dmg
+        self.logs.append(f"🩸 Enemy hit you for **{dmg}** damage!")
+        
+        if self.u['hp'] <= 0:
+            self.u['hp'] = 10
+            db.update_user(self.user.id, self.u)
             embed = self.get_embed("LOSE")
-            embed.title = "💀 DEFEATED"
+            embed.add_field(name="💀 DEFEAT", value="You retreated to heal.", inline=False)
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
-        # Prep next turn
+        db.update_user(self.user.id, self.u)
         self.turn += 1
-        self.p['mp'] = min(self.p['max_mp'], self.p['mp'] + 5) # MP Regen
-        self.telegraph_enemy()
         await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
-    @ui.button(label="Attack", style=discord.ButtonStyle.secondary, emoji="🗡️")
-    async def atk_btn(self, interaction: discord.Interaction, button: ui.Button):
-        if interaction.user.id != self.p['uid']: return
-        dmg = max(1, self.p_stats['atk'])
-        if self.next_enemy_move == "Block": dmg = int(dmg * 0.5)
+    @ui.button(label="Strike", style=discord.ButtonStyle.danger, emoji="⚔️")
+    async def attack(self, interaction: discord.Interaction, button: ui.Button):
+        if interaction.user.id != self.user.id: return
         
-        self.m_hp -= dmg
-        self.add_log(f"+ You hit for {dmg} DMG.")
+        dmg = int(((self.u['level'] * 2) + 10) * self.atk_mult)
+        if random.random() < self.crit_chance:
+            dmg *= 2
+            self.logs.append(f"💥 **CRITICAL HIT!** You dealt **{dmg}**!")
+        else:
+            self.logs.append(f"🗡️ You hit for **{dmg}**.")
+            
+        self.enemy['hp'] -= dmg
         await self.end_turn(interaction)
 
-    @ui.button(label="Skills", style=discord.ButtonStyle.primary, emoji="✨")
-    async def skill_btn(self, interaction: discord.Interaction, button: ui.Button):
-        if interaction.user.id != self.p['uid']: return
-        # Create a dropdown for skills dynamically
-        view = SkillSelectView(self, CLASSES[self.p['p_class']]['skills'])
-        await interaction.response.send_message("Choose a Mantra:", view=view, ephemeral=True)
-
-    @ui.button(label="Defend", style=discord.ButtonStyle.success, emoji="🛡️")
-    async def def_btn(self, interaction: discord.Interaction, button: ui.Button):
-        if interaction.user.id != self.p['uid']: return
-        self.p_stats['def'] += 10 # Temp boost
-        self.add_log("🛡️ You assume a defensive stance.")
-        self.p['mp'] += 10 # Defending restores MP
+    @ui.button(label="Mantra", style=discord.ButtonStyle.primary, emoji="🕉️")
+    async def mantra(self, interaction: discord.Interaction, button: ui.Button):
+        if interaction.user.id != self.user.id: return
+        dmg = int(self.u['vidya'] * 5) + 40
+        self.enemy['hp'] -= dmg
+        self.logs.append(f"✨ **Mantra Blast!** You dealt **{dmg}** magic dmg.")
         await self.end_turn(interaction)
-        self.p_stats['def'] -= 10 # Revert
 
-class SkillSelectView(ui.View):
-    def __init__(self, parent_view, skills):
+# ==============================================================================
+# 🛒 SHOP & TRAVEL & CHAKRAS
+# ==============================================================================
+
+class ShopView(ui.View):
+    def __init__(self, uid):
         super().__init__()
-        self.parent = parent_view
-        self.add_item(SkillSelect(skills))
+        self.uid = uid
+        self.add_item(ShopSelect(uid))
 
-class SkillSelect(ui.Select):
-    def __init__(self, skills):
-        options = []
-        for s in skills:
-            data = SKILLS[s]
-            options.append(discord.SelectOption(
-                label=f"{s} ({data['cost']} MP)", 
-                description=data['desc'], 
-                value=s
+class ShopSelect(ui.Select):
+    def __init__(self, uid):
+        self.uid = uid
+        opts = []
+        for k,v in ITEMS.items():
+            opts.append(discord.SelectOption(
+                label=f"{k} ({v['price']} G)", 
+                description=f"Karma: {v['karma']} | {v['desc']}", 
+                value=k,
+                emoji="💊" if v['type'] == 'heal' else "🔥"
             ))
-        super().__init__(placeholder="Cast a Skill...", min_values=1, max_values=1, options=options)
+        super().__init__(placeholder="Select an item...", options=opts)
 
     async def callback(self, interaction: discord.Interaction):
-        skill_name = self.values[0]
-        data = SKILLS[skill_name]
+        if interaction.user.id != self.uid: return
+        item = ITEMS[self.values[0]]
+        u = db.get_user(self.uid)
         
-        if self.parent.p['mp'] < data['cost']:
-            return await interaction.response.send_message("❌ Not enough MP!", ephemeral=True)
+        if u['gold'] < item['price']:
+            return await interaction.response.send_message("❌ **Insufficient Funds.**", ephemeral=True)
+        if u['karma'] < item['karma']:
+            return await interaction.response.send_message(f"❌ **Karma too low.** Need {item['karma']}.", ephemeral=True)
             
-        self.parent.p['mp'] -= data['cost']
+        u['gold'] -= item['price']
+        u['inventory'][self.values[0]] = u['inventory'].get(self.values[0], 0) + 1
+        db.update_user(self.uid, u)
         
-        # Execute Skill
-        if data['type'] == 'dmg':
-            dmg = int(self.parent.p_stats['atk'] * data['val'])
-            self.parent.m_hp -= dmg
-            self.parent.add_log(f"💥 {skill_name} deals {dmg} DMG!")
-            
-        elif data['type'] == 'heal':
-            heal = int(self.parent.p['max_hp'] * (data['val']/100))
-            self.parent.p['hp'] = min(self.parent.p['max_hp'], self.parent.p['hp'] + heal)
-            self.parent.add_log(f"💚 {skill_name} heals {heal} HP!")
-            
-        elif data['type'] == 'stun':
-            dmg = int(self.parent.p_stats['atk'] * 0.5)
-            self.parent.m_hp -= dmg
-            self.parent.stunned = True
-            self.parent.add_log(f"💫 {skill_name} Stuns opponent! ({dmg} DMG)")
-            
-        elif data['type'] == 'multi':
-            dmg = int(self.parent.p_stats['atk'] * 0.8)
-            hits = data['val']
-            total = dmg * hits
-            self.parent.m_hp -= total
-            self.parent.add_log(f"⚔️ {skill_name} hits {hits} times for {total} DMG!")
+        await interaction.response.send_message(f"✅ Purchased **{self.values[0]}**!", ephemeral=True)
 
-        await self.parent.end_turn(interaction)
-
-# ==============================================================================
-# 🎲 CHAUPAR (GAMBLING)
-# ==============================================================================
-
-class ChauparView(ui.View):
-    def __init__(self, p, bet):
+class TravelView(ui.View):
+    def __init__(self, uid):
         super().__init__()
-        self.p = p
-        self.bet = bet
+        self.uid = uid
+        opts = []
+        for k, v in LOCATIONS.items():
+            opts.append(discord.SelectOption(label=k, description=f"Lvl {v['level']}+", value=k, emoji="📍"))
+        self.add_item(TravelSelect(uid, opts))
+
+class TravelSelect(ui.Select):
+    def __init__(self, uid, opts):
+        self.uid = uid
+        super().__init__(placeholder="Journey to...", options=opts)
+    
+    async def callback(self, interaction: discord.Interaction):
+        if interaction.user.id != self.uid: return
+        dest = self.values[0]
+        u = db.get_user(self.uid)
         
-    @ui.button(label="Roll the Dice 🎲", style=discord.ButtonStyle.blurple)
-    async def roll(self, interaction: discord.Interaction, button: ui.Button):
-        if interaction.user.id != self.p['uid']: return
+        if u['level'] < LOCATIONS[dest]['level']:
+            return await interaction.response.send_message("🔒 **Level too low.**", ephemeral=True)
         
-        # Rigged? No. Random.
-        player_roll = random.randint(2, 12)
-        shakuni_roll = random.randint(2, 12)
+        u['location'] = dest
+        db.update_user(self.uid, u)
+        await interaction.response.send_message(f"🌏 You have arrived at **{dest}**.", ephemeral=True)
+
+class ChakraView(ui.View):
+    def __init__(self, user):
+        super().__init__()
+        self.user = user
+        self.u = db.get_user(user.id)
         
-        embed = discord.Embed(title="🎲 Chaupar Game", color=C_GOLD)
-        embed.add_field(name="Your Roll", value=f"**{player_roll}**")
-        embed.add_field(name="Shakuni's Roll", value=f"**{shakuni_roll}**")
-        
-        if player_roll > shakuni_roll:
-            win = self.bet * 2
-            self.p['gold'] += self.bet # (Original bet + win amount logic corrected: simply add bet amount to balance to simulate 2x return on investment)
-            # Actually, standard logic: remove bet first, add 2x on win. 
-            # We removed bet before calling view? No. Let's do it now.
-            # Simplified:
-            db.update_player(self.p['uid'], {"gold": self.p['gold'] + self.bet})
-            embed.description = f"🎉 **YOU WON!** You gained {self.bet} Gold!"
-            embed.color = C_GREEN
-        elif player_roll < shakuni_roll:
-            db.update_player(self.p['uid'], {"gold": self.p['gold'] - self.bet})
-            embed.description = f"💀 **SHAKUNI WINS.** You lost {self.bet} Gold."
-            embed.color = C_RED
-        else:
-            embed.description = "🤝 **DRAW.** No gold exchanged."
+        for k, v in CHAKRAS.items():
+            unlocked = k in self.u['chakras']
+            btn = ui.Button(
+                label=f"{v['name']}", 
+                style=discord.ButtonStyle.success if unlocked else discord.ButtonStyle.secondary,
+                emoji=v['color'],
+                disabled=unlocked
+            )
+            btn.callback = self.create_cb(k, v)
+            self.add_item(btn)
+
+    def create_cb(self, key, data):
+        async def cb(interaction):
+            if interaction.user.id != self.user.id: return
+            if self.u['gold'] < data['cost'] or self.u['vidya'] < data['vidya']:
+                return await interaction.response.send_message(f"❌ Need {data['cost']} Gold & {data['vidya']} Vidya.", ephemeral=True)
             
-        await interaction.response.edit_message(embed=embed, view=None)
+            self.u['gold'] -= data['cost']
+            self.u['chakras'].append(key)
+            
+            # Apply passive
+            if data['stat'] == 'hp':
+                self.u['max_hp'] += data['val']
+                self.u['hp'] += data['val']
+                
+            db.update_user(self.user.id, self.u)
+            await interaction.response.send_message(f"✨ **{data['name']} Chakra Awakened!**", ephemeral=True)
+            # Refresh View
+            await interaction.message.edit(view=ChakraView(self.user))
+        return cb
 
 # ==============================================================================
-# 🚀 MAIN COMMANDS
+# 🧘 ANIMATED MEDITATION
+# ==============================================================================
+
+class MeditateView(ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @ui.button(label="Focus", style=discord.ButtonStyle.success, emoji="🧘")
+    async def focus(self, interaction: discord.Interaction, button: ui.Button):
+        db.update_user(interaction.user.id, {"meditate_start": str(time.time())})
+        await interaction.response.send_message("🧘 **You enter a deep trance...**\n*Click 'Awaken' when ready to return.*", ephemeral=True)
+
+    @ui.button(label="Awaken", style=discord.ButtonStyle.secondary, emoji="👁️")
+    async def awaken(self, interaction: discord.Interaction, button: ui.Button):
+        u = db.get_user(interaction.user.id)
+        start = float(u['meditate_start'])
+        if start == 0: return await interaction.response.send_message("You are not meditating.", ephemeral=True)
+        
+        mins = int((time.time() - start) / 60)
+        if mins < 1: return await interaction.response.send_message("Too soon. Clear your mind.", ephemeral=True)
+        
+        xp, hp = mins * 10, mins * 5
+        u['meditate_start'] = "0"
+        u['xp'] += xp
+        u['hp'] = min(u['max_hp'], u['hp'] + hp)
+        u['vidya'] += int(mins / 5)
+        
+        db.update_user(interaction.user.id, u)
+        await interaction.response.send_message(embed=DharmaEmbed("Awakening", f"Time: {mins}m\n+{xp} XP | +{hp} HP | +{int(mins/5)} Vidya", COLORS["CYAN"]))
+
+# ==============================================================================
+# 🚀 MAIN BOT
 # ==============================================================================
 
 class AgniBot(commands.Bot):
@@ -417,98 +477,17 @@ class AgniBot(commands.Bot):
         super().__init__(command_prefix="!", intents=discord.Intents.all())
     async def setup_hook(self):
         await self.tree.sync()
-        print("🔥 Agni 4.0 (Mahabharata) is Ready.")
+        print("🔥 Agni 7.0 (Nirvana) is Online.")
 
 bot = AgniBot()
 
-class ClassSelect(ui.Select):
-    def __init__(self):
-        opts = []
-        for k, v in CLASSES.items():
-            opts.append(discord.SelectOption(label=k, description=v['desc'], value=k))
-        super().__init__(placeholder="Choose your Varna (Class)...", options=opts)
+@bot.tree.command(name="menu", description="Open the Game Dashboard")
+async def menu(interaction: discord.Interaction):
+    if db.create_user(interaction.user.id):
+        await interaction.response.send_message("Welcome, Seeker.", ephemeral=True)
     
-    async def callback(self, interaction: discord.Interaction):
-        c = self.values[0]
-        db.create_player(interaction.user.id, interaction.user.display_name, c)
-        await interaction.response.send_message(f"🕉️ **Destiny Chosen.** You are now a **{c}**.")
-
-class CreateView(ui.View):
-    def __init__(self):
-        super().__init__()
-        self.add_item(ClassSelect())
-
-@bot.tree.command(name="start", description="Begin your epic saga")
-async def start(interaction: discord.Interaction):
-    if db.get_player(interaction.user.id):
-        return await interaction.response.send_message("You are already on the path.", ephemeral=True)
-    embed = discord.Embed(title="🕉️ Choose Your Path", description="The cycle of Samsara begins.", color=C_GOLD)
-    await interaction.response.send_message(embed=embed, view=CreateView())
-
-@bot.tree.command(name="battle", description="Tactical Combat")
-async def battle(interaction: discord.Interaction):
-    p = db.get_player(interaction.user.id)
-    if not p: return await interaction.response.send_message("Use `/start` first.")
-    
-    if p['hp'] <= 0:
-         return await interaction.response.send_message("💀 You are incapacitated. Use `/heal`.", ephemeral=True)
-
-    loc = p['loc']
-    mobs = MOBS.get(loc, MOBS["Varanasi"])
-    mob = random.choice(mobs).copy()
-    
-    await interaction.response.send_message(view=CombatView(p, mob))
-
-@bot.tree.command(name="profile", description="Check Stats & Skills")
-async def profile(interaction: discord.Interaction):
-    p = db.get_player(interaction.user.id)
-    if not p: return await interaction.response.send_message("Use `/start` first.")
-    
-    s = p['stats']
-    c_data = CLASSES[p['p_class']]
-    
-    embed = discord.Embed(title=f"📜 {p['name']} the {p['p_class']}", color=C_BLUE)
-    embed.add_field(name="Vitals", value=f"❤️ HP: {p['hp']}/{p['max_hp']}\n🟦 MP: {p['mp']}/{p['max_mp']}", inline=True)
-    embed.add_field(name="Attributes", value=f"⚔️ ATK: {s['atk']}\n🛡️ DEF: {s['def']}\n👟 SPD: {s['spd']}", inline=True)
-    embed.add_field(name="Progression", value=f"✨ Lvl: {p['lvl']}\n💰 Gold: {p['gold']}\n📿 Relic: {p['relic']}", inline=True)
-    embed.add_field(name="Skills", value=", ".join(c_data['skills']), inline=False)
-    
-    await interaction.response.send_message(embed=embed)
-
-@bot.tree.command(name="heal", description="Meditate to restore HP/MP")
-async def heal(interaction: discord.Interaction):
-    p = db.get_player(interaction.user.id)
-    p['hp'] = p['max_hp']
-    p['mp'] = p['max_mp']
-    db.update_player(p['uid'], p)
-    await interaction.response.send_message("🧘 **Om Namah Shivaya.** You are fully restored.")
-
-@bot.tree.command(name="gamble", description="Play Chaupar against Shakuni")
-async def gamble(interaction: discord.Interaction, amount: int):
-    p = db.get_player(interaction.user.id)
-    if p['gold'] < amount:
-        return await interaction.response.send_message("🚫 You cannot afford this bet.", ephemeral=True)
-    if amount < 10:
-        return await interaction.response.send_message("🚫 Minimum bet is 10 Gold.", ephemeral=True)
-        
-    await interaction.response.send_message(f"🎲 Bet placed: **{amount} Gold**. Rolling...", view=ChauparView(p, amount))
-
-@bot.tree.command(name="travel", description="Move to a new region")
-async def travel(interaction: discord.Interaction):
-    view = ui.View()
-    select = ui.Select(placeholder="Select Region...")
-    for loc in MOBS.keys():
-        select.add_option(label=loc, value=loc)
-        
-    async def cb(inter):
-        if inter.user.id != interaction.user.id: return
-        p = db.get_player(inter.user.id)
-        p['loc'] = select.values[0]
-        db.update_player(p['uid'], p)
-        await inter.response.send_message(f"🌏 Arrived in **{p['loc']}**.")
-        
-    select.callback = cb
-    view.add_item(select)
-    await interaction.response.send_message("Where will you go?", view=view)
+    view = DashboardView(interaction.user)
+    embed = await view.refresh_embed(interaction)
+    await interaction.response.send_message(embed=embed, view=view)
 
 bot.run(TOKEN)
