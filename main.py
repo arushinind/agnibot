@@ -6,13 +6,18 @@ import random
 import time
 import json
 import math
+import os  # Added to read environment variables
 from typing import Optional, List, Dict
 
 # ==============================================================================
 # ⚙️ CONFIGURATION & CONSTANTS
 # ==============================================================================
 
-TOKEN = "YOUR_TOKEN_HERE"  # ⚠️ REPLACE THIS
+# ⚠️ GET TOKEN FROM ENVIRONMENT VARIABLE
+TOKEN = os.getenv("DISCORD_TOKEN")
+
+if not TOKEN:
+    raise ValueError("No DISCORD_TOKEN found in environment variables!")
 
 # 🎨 Theme Colors
 C_GOLD = 0xFFD700
