@@ -34,52 +34,52 @@ ICONS = {
 # ==============================================================================
 
 PATHS = {
-    "Warrior": {"stats": {"atk": 15, "hp": 150, "crit": 0.05}, "ability": "Heavy Smash", "icon": "🗡️"},
-    "Mage":    {"stats": {"atk": 8, "hp": 80, "crit": 0.02},  "ability": "Arcane Blast", "icon": "🔥"},
-    "Rogue":   {"stats": {"atk": 12, "hp": 100, "crit": 0.25}, "ability": "Sneak Attack", "icon": "🎭"}
+    "Kshatriya": {"stats": {"atk": 15, "hp": 150, "crit": 0.05}, "ability": "Rage Strike", "icon": "🗡️"},
+    "Rishi":     {"stats": {"atk": 8, "hp": 80, "crit": 0.02},  "ability": "Mantra Blast", "icon": "🔥"},
+    "Vanara":    {"stats": {"atk": 12, "hp": 100, "crit": 0.25}, "ability": "Tail Whip", "icon": "🐵"}
 }
 
 MATERIALS = {
-    "Iron Ore":     {"r": "Common", "price": 10},
-    "Dark Essence": {"r": "Uncommon", "price": 50},
-    "Star Metal":   {"r": "Rare", "price": 200},
-    "Life Essence": {"r": "Epic", "price": 500},
-    "Hard Scale":   {"r": "Rare", "price": 150}
+    "Loha (Iron)":  {"r": "Common", "price": 10},
+    "Asura Blood":  {"r": "Uncommon", "price": 50},
+    "Vajra Steel":  {"r": "Rare", "price": 200},
+    "Amrit Drop":   {"r": "Epic", "price": 500},
+    "Naga Scale":   {"r": "Rare", "price": 150}
 }
 
 RECIPES = {
-    "Vampire Dagger":  {"type": "wep", "atk": 35, "cost": {"Iron Ore": 10, "Dark Essence": 5}, "desc": "Heals 10% of damage dealt."},
-    "Storm Staff":     {"type": "wep", "atk": 150, "cost": {"Star Metal": 10, "Life Essence": 2}, "desc": "Crackles with lightning."},
-    "Royal Spear":     {"type": "wep", "atk": 300, "cost": {"Star Metal": 20, "Life Essence": 10}, "desc": "God-killer weapon."},
-    "Plate Armor":     {"type": "arm", "hp": 300, "cost": {"Iron Ore": 20, "Hard Scale": 10}, "desc": "Heavy protection."}
+    "Naga Dagger":     {"type": "wep", "atk": 35, "cost": {"Loha (Iron)": 10, "Asura Blood": 5}, "desc": "Drains life on hit."},
+    "Indra's Staff":   {"type": "wep", "atk": 150, "cost": {"Vajra Steel": 10, "Amrit Drop": 2}, "desc": "Crackles with lightning."},
+    "Shula Spear":     {"type": "wep", "atk": 300, "cost": {"Vajra Steel": 20, "Amrit Drop": 10}, "desc": "Piercing divine weapon."},
+    "Kavacha Armor":   {"type": "arm", "hp": 300, "cost": {"Loha (Iron)": 20, "Naga Scale": 10}, "desc": "Divine protection."}
 }
 
 VAHANAS = {
-    "Gilded Rat":      {"name": "Gilded Rat",      "buff": "+20% Gold",   "stat": "gold_mult", "val": 0.2},
-    "Emerald Peacock": {"name": "Emerald Peacock", "buff": "+15% Crit",   "stat": "crit",      "val": 0.15},
-    "Ironclad Bull":   {"name": "Ironclad Bull",   "buff": "+300 Max HP", "stat": "hp",        "val": 300},
-    "Storm Falcon":    {"name": "Storm Falcon",    "buff": "+25% Dodge",  "stat": "dodge",     "val": 0.25}
+    "Mushika":   {"name": "Mushika (Rat)",    "buff": "+20% Gold",   "stat": "gold_mult", "val": 0.2},
+    "Mayura":    {"name": "Mayura (Peacock)", "buff": "+15% Crit",   "stat": "crit",      "val": 0.15},
+    "Vrishabha": {"name": "Vrishabha (Bull)", "buff": "+300 Max HP", "stat": "hp",        "val": 300},
+    "Suparna":   {"name": "Suparna (Bird)",   "buff": "+25% Dodge",  "stat": "dodge",     "val": 0.25}
 }
 
 LOCATIONS = {
-    "Sun City":    {"lvl": 1, "mats": ["Iron Ore"]},
-    "Mist Woods":  {"lvl": 10, "mats": ["Iron Ore", "Dark Essence"]},
-    "Gold Fort":   {"lvl": 30, "mats": ["Dark Essence", "Hard Scale"]},
-    "Sky Peak":    {"lvl": 60, "mats": ["Star Metal", "Life Essence"]}
+    "Ayodhya":     {"lvl": 1, "mats": ["Loha (Iron)"]},
+    "Dandaka":     {"lvl": 10, "mats": ["Loha (Iron)", "Asura Blood"]},
+    "Lanka":       {"lvl": 30, "mats": ["Asura Blood", "Naga Scale"]},
+    "Himavat":     {"lvl": 60, "mats": ["Vajra Steel", "Amrit Drop"]}
 }
 
 ITEMS = {
-    "Potion":     {"type": "heal", "val": 150, "price": 50, "rep": 0, "desc": "Heals 150 HP"},
-    "Elixir":     {"type": "heal", "val": 9999, "price": 500, "rep": 20, "desc": "Full Heal"},
-    "Fire Scroll":{"type": "dmg", "val": 800, "price": 1500, "rep": 0, "desc": "800 DMG"},
+    "Soma":       {"type": "heal", "val": 150, "price": 50, "rep": 0, "desc": "Restores 150 HP"},
+    "Sanjeevani": {"type": "heal", "val": 9999, "price": 500, "rep": 20, "desc": "Full Restoration"},
+    "Agni Scroll":{"type": "dmg", "val": 800, "price": 1500, "rep": 0, "desc": "800 Fire DMG"},
 }
 
 GAME_TIPS = [
-    "Tip: You heal 40% HP when using 'Rest' in battle.",
-    "Tip: Golden Enemies drop 10x Gold and XP.",
-    "Tip: Reincarnating at Level 50 boosts ALL stats permanently by 20%.",
-    "Tip: Different regions drop different crafting materials.",
-    "Tip: The Vampire Dagger heals you on every hit."
+    "Tip: Use 'Rest' in battle if you run out of Soma.",
+    "Tip: Golden Asuras drop 10x Gold and XP.",
+    "Tip: Reincarnating at Level 50 boosts your Atman (Stats) by 20%.",
+    "Tip: Ayodhya is safe, but Lanka is full of demons.",
+    "Tip: The Naga Dagger heals you on every hit."
 ]
 
 # ==============================================================================
@@ -103,7 +103,7 @@ class Database:
                 max_hp INTEGER DEFAULT 100,
                 gold INTEGER DEFAULT 0,
                 rebirths INTEGER DEFAULT 0,
-                location TEXT DEFAULT 'Sun City',
+                location TEXT DEFAULT 'Ayodhya',
                 inventory TEXT DEFAULT '{}',
                 materials TEXT DEFAULT '{}',
                 equipment TEXT DEFAULT '{"wep": "None", "arm": "None", "mount": "None"}'
@@ -127,11 +127,11 @@ class Database:
             return d
         return None
 
-    def create_user(self, uid, path="Warrior"):
+    def create_user(self, uid, path="Kshatriya"):
         if not self.get_user(uid):
             p_stats = PATHS[path]["stats"]
             hp = 100 + p_stats["hp"]
-            inv = json.dumps({"Potion": 5}) # Start with 5 potions
+            inv = json.dumps({"Soma": 5}) # Start with 5 Soma
             self.cursor.execute("INSERT INTO users (user_id, path, hp, max_hp, inventory) VALUES (?, ?, ?, ?, ?)", (uid, path, hp, hp, inv))
             self.conn.commit()
             return True
@@ -155,7 +155,7 @@ db = Database()
 
 class DharmaEmbed(discord.Embed):
     def __init__(self, title, description=None, color=COLORS["SAFFRON"], user=None):
-        super().__init__(title=f"⚔️ {title}", description=description, color=color)
+        super().__init__(title=f"🕉️ {title}", description=description, color=color)
         if user:
             u = db.get_user(user.id)
             if u:
@@ -174,7 +174,7 @@ def render_hp(curr, max_val, length=10):
 
 def calculate_stats(u):
     # Base Stats
-    path_stats = PATHS.get(u['path'], PATHS['Warrior'])['stats']
+    path_stats = PATHS.get(u['path'], PATHS['Kshatriya'])['stats']
     
     # REBIRTH MULTIPLIER (The Addiction Hook)
     # Each rebirth adds +20% to ALL stats. Infinite scaling.
@@ -228,8 +228,8 @@ class CombatView(ui.View):
                 break
         
         if heal_btn:
-            if inv.get("Potion", 0) > 0:
-                heal_btn.label = f"Potion ({inv['Potion']})"
+            if inv.get("Soma", 0) > 0:
+                heal_btn.label = f"Soma ({inv['Soma']})"
                 heal_btn.style = discord.ButtonStyle.success
                 heal_btn.emoji = "🧪"
             else:
@@ -242,8 +242,8 @@ class CombatView(ui.View):
         is_golden = random.random() < 0.05 # 5% Chance
         
         lvl = self.u['level'] + (self.wave - 1) * 2
-        names = ["Dark Knight", "Feral Ogre", "Night Ghoul", "Venom Serpent"]
-        mats = LOCATIONS.get(self.loc, LOCATIONS["Sun City"])["mats"]
+        names = ["Rakshasa", "Asura Soldier", "Pishacha", "Yaksha Rogue"]
+        mats = LOCATIONS.get(self.loc, LOCATIONS["Ayodhya"])["mats"]
         
         if is_golden:
             self.enemy = {
@@ -252,7 +252,7 @@ class CombatView(ui.View):
                 "hp": 30, # Weak HP, easy kill
                 "max_hp": 30,
                 "atk": 5,
-                "drop_mat": "Life Essence", # Rare drop guaranteed
+                "drop_mat": "Amrit Drop", # Rare drop guaranteed
                 "is_golden": True
             }
             self.logs.append(f"⚠️ **A GOLDEN ENEMY APPEARED!** (Huge Loot!)")
@@ -282,7 +282,7 @@ class CombatView(ui.View):
         if self.enemy['hp'] <= 0:
             # Rewards
             gold_mult = 10 if self.enemy.get('is_golden') else 1
-            if self.u['equipment']['mount'] == "Gilded Rat": gold_mult += 0.2
+            if self.u['equipment']['mount'] == "Mushika": gold_mult += 0.2
             
             # Drop
             mat = self.enemy['drop_mat']
@@ -324,7 +324,7 @@ class CombatView(ui.View):
         dmg = random.randint(int(self.enemy['atk']*0.8), int(self.enemy['atk']*1.2))
         
         # Dodge Check
-        dodge_chance = 0.25 if self.u['equipment']['mount'] == "Storm Falcon" else 0.05
+        dodge_chance = 0.25 if self.u['equipment']['mount'] == "Suparna" else 0.05
         if random.random() < dodge_chance:
             self.logs.append("💨 DODGED the attack!")
         else:
@@ -355,7 +355,7 @@ class CombatView(ui.View):
             self.logs.append(f"+ Hit for {dmg}.")
             
         # LIFESTEAL MECHANIC
-        if self.u['equipment']['wep'] == "Vampire Dagger":
+        if self.u['equipment']['wep'] == "Naga Dagger":
             heal = int(dmg * 0.1)
             self.u['hp'] = min(self.stats['max_hp'], self.u['hp'] + heal)
             
@@ -367,11 +367,11 @@ class CombatView(ui.View):
         if interaction.user.id != self.user.id: return
         inv = self.u['inventory']
         
-        if inv.get("Potion", 0) > 0:
-            inv["Potion"] -= 1
+        if inv.get("Soma", 0) > 0:
+            inv["Soma"] -= 1
             heal = 150 # Buffed Potion
             self.u['hp'] = min(self.stats['max_hp'], self.u['hp'] + heal)
-            self.logs.append("+ Potion (+150 HP)")
+            self.logs.append("+ Soma (+150 HP)")
             await self.end_turn(interaction)
         else:
             # BUFFED REST: 40% Heal
@@ -463,7 +463,7 @@ class AgniBot(commands.Bot):
         super().__init__(command_prefix="!", intents=discord.Intents.all())
     async def setup_hook(self):
         await self.tree.sync()
-        print("🔥 Agni 14.0 (Eternal Cycle) is Online.")
+        print("🔥 Agni 15.0 (Dharma) is Online.")
 
 bot = AgniBot()
 
